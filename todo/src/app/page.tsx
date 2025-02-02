@@ -1,5 +1,6 @@
 "use client";
 
+import { DeleteIcon, EditIcon } from "@/components/Icons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +21,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { clear } from "console";
 import Link from "next/link";
@@ -32,6 +42,7 @@ type Task = {
 
 const Home = () => {
   const [newTask, setNewTask] = useState("");
+  const [editTask, setEditTask] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completed, setCompleted] = useState(0);
@@ -43,6 +54,11 @@ const Home = () => {
 
   const changeFilter = (e: any) => {
     setFilter(e.target.name);
+  };
+
+  const changeEditTask = (e: ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    setEditTask(e.target.value);
   };
 
   const handleToggle = (index: number) => {
@@ -72,6 +88,15 @@ const Home = () => {
       setCompleted(completed - 1);
     }
     setTasks(tasks.filter((tasks, i) => i !== index));
+  };
+  const handleEditTask = (index: number) => {
+    setTasks((prevState) => {
+      const newState = prevState.map((task, i) => {
+        return i === index ? { ...task, name: editTask } : task;
+      });
+
+      return newState;
+    });
   };
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -168,31 +193,64 @@ const Home = () => {
                             {task.name}
                           </p>
                         </div>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button className="bg-red-50 hover:bg-red-50 shadow-none text-red-400 px-3">
-                              Delete
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Confirm Deletion
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete this task?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => removeOne(index)}
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <div className="flex gap-2">
+                          <Dialog>
+                            <DialogTrigger
+                              onClick={() => setEditTask(task.name)}
+                            >
+                              <Button className="bg-orange-50 hover:bg-orange-50 shadow-none fill-orange-500 px-3">
+                                <EditIcon />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent
+                              onOpenAutoFocus={(e) => e.preventDefault()}
+                            >
+                              <DialogHeader>
+                                <DialogTitle>Edit Task</DialogTitle>
+                              </DialogHeader>
+                              <Input
+                                value={editTask}
+                                onChange={changeEditTask}
+                              />
+                              <DialogFooter>
+                                <DialogClose asChild>
+                                  <Button
+                                    type="submit"
+                                    onClick={() => handleEditTask(index)}
+                                    disabled={editTask === ""}
+                                  >
+                                    Save changes
+                                  </Button>
+                                </DialogClose>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button className="bg-red-50 hover:bg-red-50 shadow-none fill-red-500 px-3">
+                                <DeleteIcon />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Confirm Deletion
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this task?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => removeOne(index)}
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
                     );
                   })}
